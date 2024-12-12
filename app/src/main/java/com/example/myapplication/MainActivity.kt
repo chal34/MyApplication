@@ -23,12 +23,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.internal.composableLambdaInstance
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
@@ -73,31 +76,31 @@ data class ConnectionInfo(
 data class DroneIDRT(val basicInfo: BasicInfo,val locationInfo: LocationInfo,val pilotInfo: PilotInfo,val connectionInfo: ConnectionInfo)
 
 
-var basicInfoList = mutableListOf(
-    BasicInfo(1, "Alice", "30"),
 
-)
-
-var connectionInfoList = mutableListOf(
-    ConnectionInfo("2")
-)
-
-var locationInfoList = mutableListOf(
-    LocationInfo(34.0522, -118.2437, 100.0),
-
-)
-
-var pilotInfoList = mutableListOf(
-    PilotInfo(1, "Dan", 5),
-    PilotInfo(2, "Eve", 3),
-    PilotInfo(3, "Frank", 7)
-)
 
 
 class MainActivity : ComponentActivity() {
     private lateinit var wifiManager: WifiManager
 
+    var basicInfoList = mutableStateListOf(
+        BasicInfo(1, "Alice", "30"),
 
+        )
+
+    var connectionInfoList = mutableStateListOf(
+        ConnectionInfo("2")
+    )
+
+    var locationInfoList = mutableStateListOf(
+        LocationInfo(34.0522, -118.2437, 100.0),
+
+        )
+
+    var pilotInfoList = mutableStateListOf(
+        PilotInfo(1, "Dan", 5),
+        PilotInfo(2, "Eve", 3),
+        PilotInfo(3, "Frank", 7)
+    )
 
 
 
@@ -115,6 +118,9 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     )
                     UavInformationTable()
+                    Button(onClick = {
+
+                    }) { }
                 }
             }
         }
@@ -153,7 +159,7 @@ class MainActivity : ComponentActivity() {
         }
     }
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun scanWifi() {
+    fun scanWifi() {
         // 开始扫描
         wifiManager.startScan()
 
@@ -172,76 +178,239 @@ class MainActivity : ComponentActivity() {
         for (scanResult in wifiList) {
             parseBeacon(scanResult)
             // 处理扫描结果，例如打印SSID和信号强度
-            println("SSID: ${scanResult.getWifiSsid()}, RSSI: ${scanResult.level}")
             scanResult.informationElements.iterator()
-            Log.d("dd","SSID: ${scanResult.getWifiSsid()}, RSSI: ${scanResult.level}")
         }
 
     }
-}
 
 
-@RequiresApi(Build.VERSION_CODES.R)
-fun parseBeacon(scanResult: ScanResult) {
-    // 根据特定协议解析Beacon信息
-    // 示例：检查特定的UUID、Major、Minor等
-    val sWifiValue= scanResult.informationElements
-    Log.d("ddss","tt")
-    if (sWifiValue == null)
-        return
-    for (element in sWifiValue )
-    {
-        if (element == null){continue}
-        val valueId = element.id
-        if (valueId==null){
-            continue
+    @Preview(showBackground = true)
+    @Composable
+    fun UavInformationTable() {
+        val modifier= Modifier
+            .wrapContentSize()
+            .clip(RoundedCornerShape(4.dp))
+            .background(color = PurpleGrey80)
+            .padding(16.dp)
+            .fillMaxWidth()
+
+
+        MyApplicationTheme {
+            Column {
+                UavConnectionSec(modifier)
+                UavIDSec(modifier)
+                UavLocationSec(modifier)
+                UavOperatorSec(modifier)
+                Button(onClick = { scanWifi() }) { Text(text = "刷新")}
+            }
         }
-        if (valueId==221){
+    }
 
-            val valueBytes = element.bytes
-            if (valueBytes==null){
+
+
+    @Preview
+    @Composable
+    fun BasicInfor(){
+
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("基础信息", style = MaterialTheme.typography.titleLarge)
+            basicInfoList.forEach { info ->
+                Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("位置信息", style = MaterialTheme.typography.titleLarge)
+            locationInfoList.forEach { location ->
+                Text("Latitude: ${location.latitude}, Longitude: ${location.longitude}, Altitude: ${location.altitude}")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("飞手信息", style = MaterialTheme.typography.titleLarge)
+            pilotInfoList.forEach { pilot ->
+                Text("Pilot ID: ${pilot.pilotId}, Pilot Name: ${pilot.pilotName}, Experience: ${pilot.experienceYears} years")
+            }
+        }
+    }
+
+
+
+    @Composable
+    fun UavLocationSec(modifier: Modifier){
+        Card (modifier){
+            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+                Text("位置信息", style = MaterialTheme.typography.titleLarge)
+                locationInfoList.forEach { info ->
+                    Row {
+                        Text("latitude: ${info.latitude}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "longitude: ${info.longitude}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                    Row {
+                        Text("高度: ${info.height}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "高度（起飞点）: ${info.heightOver}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                    Row {
+                        Text("altitudeGeo: ${info.altitudeGeo}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "timestamp: ${info.timestamp}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun UavOperatorSec(modifier: Modifier){
+        Card (modifier)
+        {
+            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+                Text("飞手信息", style = MaterialTheme.typography.titleLarge)
+                basicInfoList.forEach { info ->
+                    Row {
+                        Text("ID: ${info.id}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "ID类型: ${info.idType}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                    Text("类型:  ${info.type}", modifier = Modifier
+                        .padding(2.dp)
+                        .fillMaxWidth(), textAlign = TextAlign.Left)
+                }
+            }
+        }
+    }
+    @Composable
+    fun UavIDSec(modifier: Modifier){
+        Card (modifier){
+            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+                Text("ID", style = MaterialTheme.typography.titleLarge)
+                basicInfoList.forEach { info ->
+                    Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")            }
+            }
+        }
+    }
+    @Composable
+    fun UavConnectionSec(modifier: Modifier){
+        //val siInfo = remember { connectionInfoList }
+        Card (modifier = modifier){
+            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+                Text("基础信息", style = MaterialTheme.typography.titleLarge)
+                connectionInfoList.forEach { info ->
+                    Row {
+                        Text("rssi: ${info.rssi}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "mac: ${info.mac}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                    Row {
+                        Text("高度: ${info.startedTime}", modifier = Modifier.padding(2.dp))
+                        Text(
+                            "高度（起飞点）: ${info.lastSeenTime}",
+                            modifier = Modifier
+                                .padding(2.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.Right
+                        )
+                    }
+                    Row {
+                        Text("altitudeGeo: ${info.wifiDistance}", modifier = Modifier.padding(2.dp))
+
+                    }            }
+            }
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.R)
+    fun parseBeacon(scanResult: ScanResult) {
+        // 根据特定协议解析Beacon信息
+        // 示例：检查特定的UUID、Major、Minor等
+        val sWifiValue= scanResult.informationElements
+        Log.d("ddss","tt")
+        if (sWifiValue == null)
+            return
+        for (element in sWifiValue )
+        {
+            if (element == null){continue}
+            val valueId = element.id
+            if (valueId==null){
                 continue
             }
-            //Log.d("ddss1","tt1")
-            //Log.d("ddss1","SSID: ${scanResult.getWifiSsid()}, RSSI: ${scanResult.level}")
+            if (valueId==221){
 
-            pilotInfoList.set(1, PilotInfo(2,valueBytes.toString(),5))
-            //Log.d("ddddd1",scanResult.SSID)
-            Log.d("DRI_CID[0].toInt()",DRI_CID[0].toInt().toString())
-            if (scanResult.SSID=="UAV_42590_2.4_5.8_F598"){
-                Log.d("UAV_42590_2.4",scanResult.SSID)
+                val valueBytes = element.bytes
+                if (valueBytes==null){
+                    continue
+                }
+                //Log.d("ddss1","tt1")
+                //Log.d("ddss1","SSID: ${scanResult.getWifiSsid()}, RSSI: ${scanResult.level}")
+
+                pilotInfoList.set(1, PilotInfo(2,valueBytes.toString(),5))
+                //Log.d("ddddd1",scanResult.SSID)
+                Log.d("DRI_CID[0].toInt()",DRI_CID[0].toInt().toString())
+
                 processRemoteId(scanResult, buf = valueBytes)
-            }
 
+            }
         }
     }
-}
 
 
-fun processRemoteId(scanResult: ScanResult,buf: ByteBuffer)
-{
-    Log.d("ddddd2",scanResult.SSID)
-    if (buf.remaining() < 30) return
-    Log.d("dfsfw",buf.toString())
-    val driCID = ByteArray(3)
-    val arr = ByteArray(buf.remaining())
-    buf.get(driCID,0,3)
-    val vendorType = ByteArray(1)
-    Log.d("ddddd",scanResult.SSID)
-    buf.get(vendorType)
-    if ((driCID[0].toInt() and 0xFF) == DRI_CID[0].toUByte().toInt() &&
-        (driCID[1].toInt() and 0xFF) == DRI_CID[1].toUByte().toInt() &&
-        (driCID[2].toInt() and 0xFF) == DRI_CID[2].toUByte().toInt() &&
-        vendorType[0] == VendorTypeValue.toByte()) {
+    fun processRemoteId(scanResult: ScanResult,buf: ByteBuffer)
+    {
+        Log.d("ddddd2",scanResult.SSID)
+        if (buf.remaining() < 30) return
+        Log.d("dfsfw",buf.toString())
+        val driCID = ByteArray(3)
+        val arr = ByteArray(buf.remaining())
+        buf.get(driCID,0,3)
+        val vendorType = ByteArray(1)
+        Log.d("ddddd",scanResult.SSID)
+        buf.get(vendorType)
+        if ((driCID[0].toInt() and 0xFF) == DRI_CID[0].toUByte().toInt() &&
+            (driCID[1].toInt() and 0xFF) == DRI_CID[1].toUByte().toInt() &&
+            (driCID[2].toInt() and 0xFF) == DRI_CID[2].toUByte().toInt() &&
+            vendorType[0] == VendorTypeValue.toByte()) {
 
-        buf.position(DriStartByteOffset) // 设置位置以读取剩余数据
-        buf.get(arr, 0, buf.remaining())  // 读取剩余数据
-        Log.d("daadd2s",scanResult.BSSID)
-        connectionInfoList.set(0,
-            ConnectionInfo(scanResult.getWifiSsid().toString(), scanResult.BSSID, wifiDistance = scanResult.level ))
+            buf.position(DriStartByteOffset) // 设置位置以读取剩余数据
+            buf.get(arr, 0, buf.remaining())  // 读取剩余数据
+            Log.d("daadd2s",scanResult.BSSID)
+            connectionInfoList.add(1,ConnectionInfo(rssi = "test"))
+            connectionInfoList[0]= connectionInfoList[0].copy(rssi = scanResult.SSID)
+//        connectionInfoList.set(0,
+//            ConnectionInfo(scanResult.getWifiSsid().toString(), scanResult.BSSID, wifiDistance = scanResult.level ))
+        }
+
     }
-
 }
+
+
+
 
 
 
@@ -275,161 +444,3 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 //}
 
 
-@Preview(showBackground = true)
-@Composable
-fun UavInformationTable() {
-val modifier= Modifier
-    .wrapContentSize()
-    .clip(RoundedCornerShape(4.dp))
-    .background(color = PurpleGrey80)
-    .padding(16.dp)
-    .fillMaxWidth()
-    MyApplicationTheme {
-        Column {
-            UavConnectionSec(modifier)
-            UavIDSec(modifier)
-            UavLocationSec(modifier)
-            UavOperatorSec(modifier)
-        }
-    }
-}
-
-
-
-@Preview
-@Composable
-fun BasicInfor(){
-
-
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text("基础信息", style = MaterialTheme.typography.titleLarge)
-        basicInfoList.forEach { info ->
-            Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("位置信息", style = MaterialTheme.typography.titleLarge)
-        locationInfoList.forEach { location ->
-            Text("Latitude: ${location.latitude}, Longitude: ${location.longitude}, Altitude: ${location.altitude}")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text("飞手信息", style = MaterialTheme.typography.titleLarge)
-        pilotInfoList.forEach { pilot ->
-            Text("Pilot ID: ${pilot.pilotId}, Pilot Name: ${pilot.pilotName}, Experience: ${pilot.experienceYears} years")
-        }
-    }
-}
-
-
-
-@Composable
-fun UavLocationSec(modifier: Modifier){
-    Card (modifier){
-        Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
-            Text("位置信息", style = MaterialTheme.typography.titleLarge)
-            locationInfoList.forEach { info ->
-                Row {
-                    Text("latitude: ${info.latitude}", modifier = Modifier.padding(2.dp))
-                    Text(
-                        "longitude: ${info.longitude}",
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Right
-                    )
-                }
-                Row {
-                    Text("高度: ${info.height}", modifier = Modifier.padding(2.dp))
-                    Text(
-                        "高度（起飞点）: ${info.heightOver}",
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Right
-                    )
-                }
-                Row {
-                    Text("altitudeGeo: ${info.altitudeGeo}", modifier = Modifier.padding(2.dp))
-                    Text(
-                        "timestamp: ${info.timestamp}",
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Right
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun UavOperatorSec(modifier: Modifier){
-    Card (modifier)
-    {
-        Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
-            Text("飞手信息", style = MaterialTheme.typography.titleLarge)
-            basicInfoList.forEach { info ->
-                    Row {
-                        Text("ID: ${info.id}", modifier = Modifier.padding(2.dp))
-                        Text(
-                            "ID类型: ${info.idType}",
-                            modifier = Modifier
-                                .padding(2.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Right
-                        )
-                    }
-                Text("类型:  ${info.type}", modifier = Modifier
-                    .padding(2.dp)
-                    .fillMaxWidth(), textAlign = TextAlign.Left)
-            }
-        }
-    }
-}
-@Composable
-fun UavIDSec(modifier: Modifier){
-    Card (modifier){
-        Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
-            Text("ID", style = MaterialTheme.typography.titleLarge)
-            basicInfoList.forEach { info ->
-                Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")            }
-        }
-    }
-}
-@Composable
-fun UavConnectionSec(modifier: Modifier){
-    Card (modifier = modifier){
-        Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
-            Text("基础信息", style = MaterialTheme.typography.titleLarge)
-            connectionInfoList.forEach { info ->
-                Row {
-                    Text("rssi: ${info.rssi}", modifier = Modifier.padding(2.dp))
-                    Text(
-                        "mac: ${info.mac}",
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Right
-                    )
-                }
-                Row {
-                    Text("高度: ${info.startedTime}", modifier = Modifier.padding(2.dp))
-                    Text(
-                        "高度（起飞点）: ${info.lastSeenTime}",
-                        modifier = Modifier
-                            .padding(2.dp)
-                            .fillMaxWidth(),
-                        textAlign = TextAlign.Right
-                    )
-                }
-                Row {
-                    Text("altitudeGeo: ${info.wifiDistance}", modifier = Modifier.padding(2.dp))
-
-                }            }
-        }
-    }
-}
