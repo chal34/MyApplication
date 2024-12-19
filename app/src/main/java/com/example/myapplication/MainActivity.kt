@@ -103,7 +103,6 @@ class MainActivity : ComponentActivity() {
     )
 
 
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,19 +144,22 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
                 arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1)
+                1
+            )
         } else {
             // 已经获取权限，开始扫描
             scanWifi()
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun scanWifi() {
         // 开始扫描
@@ -187,7 +189,7 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun UavInformationTable() {
-        val modifier= Modifier
+        val modifier = Modifier
             .wrapContentSize()
             .clip(RoundedCornerShape(4.dp))
             .background(color = PurpleGrey80)
@@ -201,16 +203,15 @@ class MainActivity : ComponentActivity() {
                 UavIDSec(modifier)
                 UavLocationSec(modifier)
                 UavOperatorSec(modifier)
-                Button(onClick = { scanWifi() }) { Text(text = "刷新")}
+                Button(onClick = { scanWifi() }) { Text(text = "刷新") }
             }
         }
     }
 
 
-
     @Preview
     @Composable
-    fun BasicInfor(){
+    fun BasicInfor() {
 
 
         Column(modifier = Modifier.padding(16.dp)) {
@@ -236,11 +237,10 @@ class MainActivity : ComponentActivity() {
     }
 
 
-
     @Composable
-    fun UavLocationSec(modifier: Modifier){
-        Card (modifier){
-            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+    fun UavLocationSec(modifier: Modifier) {
+        Card(modifier) {
+            Column(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
                 Text("位置信息", style = MaterialTheme.typography.titleLarge)
                 locationInfoList.forEach { info ->
                     Row {
@@ -279,10 +279,10 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun UavOperatorSec(modifier: Modifier){
-        Card (modifier)
+    fun UavOperatorSec(modifier: Modifier) {
+        Card(modifier)
         {
-            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+            Column(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
                 Text("飞手信息", style = MaterialTheme.typography.titleLarge)
                 basicInfoList.forEach { info ->
                     Row {
@@ -295,28 +295,33 @@ class MainActivity : ComponentActivity() {
                             textAlign = TextAlign.Right
                         )
                     }
-                    Text("类型:  ${info.type}", modifier = Modifier
-                        .padding(2.dp)
-                        .fillMaxWidth(), textAlign = TextAlign.Left)
+                    Text(
+                        "类型:  ${info.type}", modifier = Modifier
+                            .padding(2.dp)
+                            .fillMaxWidth(), textAlign = TextAlign.Left
+                    )
                 }
             }
         }
     }
+
     @Composable
-    fun UavIDSec(modifier: Modifier){
-        Card (modifier){
-            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+    fun UavIDSec(modifier: Modifier) {
+        Card(modifier) {
+            Column(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
                 Text("ID", style = MaterialTheme.typography.titleLarge)
                 basicInfoList.forEach { info ->
-                    Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")            }
+                    Text("ID: ${info.id}, 类型: ${info.type}, ID类型: ${info.idType}")
+                }
             }
         }
     }
+
     @Composable
-    fun UavConnectionSec(modifier: Modifier){
+    fun UavConnectionSec(modifier: Modifier) {
         //val siInfo = remember { connectionInfoList }
-        Card (modifier = modifier){
-            Column (modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
+        Card(modifier = modifier) {
+            Column(modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max)) {
                 Text("基础信息", style = MaterialTheme.typography.titleLarge)
                 connectionInfoList.forEach { info ->
                     Row {
@@ -342,37 +347,40 @@ class MainActivity : ComponentActivity() {
                     Row {
                         Text("altitudeGeo: ${info.wifiDistance}", modifier = Modifier.padding(2.dp))
 
-                    }            }
+                    }
+                }
             }
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.R)
     fun parseBeacon(scanResult: ScanResult) {
         // 根据特定协议解析Beacon信息
         // 示例：检查特定的UUID、Major、Minor等
-        val sWifiValue= scanResult.informationElements
-        Log.d("ddss","tt")
+        val sWifiValue = scanResult.informationElements
+        Log.d("ddss", "tt")
         if (sWifiValue == null)
             return
-        for (element in sWifiValue )
-        {
-            if (element == null){continue}
-            val valueId = element.id
-            if (valueId==null){
+        for (element in sWifiValue) {
+            if (element == null) {
                 continue
             }
-            if (valueId==221){
+            val valueId = element.id
+            if (valueId == null) {
+                continue
+            }
+            if (valueId == 221) {
 
                 val valueBytes = element.bytes
-                if (valueBytes==null){
+                if (valueBytes == null) {
                     continue
                 }
                 //Log.d("ddss1","tt1")
                 //Log.d("ddss1","SSID: ${scanResult.getWifiSsid()}, RSSI: ${scanResult.level}")
 
-                pilotInfoList.set(1, PilotInfo(2,valueBytes.toString(),5))
+                //pilotInfoList.set(1, PilotInfo(2,valueBytes.toString(),5))
                 //Log.d("ddddd1",scanResult.SSID)
-                Log.d("DRI_CID[0].toInt()",DRI_CID[0].toInt().toString())
+                Log.d("DRI_CID[0].toInt()", DRI_CID[0].toInt().toString())
 
                 processRemoteId(scanResult, buf = valueBytes)
 
@@ -381,33 +389,58 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    fun processRemoteId(scanResult: ScanResult,buf: ByteBuffer)
-    {
-        Log.d("ddddd2",scanResult.SSID)
+    fun processRemoteId(scanResult: ScanResult, buf: ByteBuffer) {
+        Log.d("ddddd2", scanResult.SSID)
         if (buf.remaining() < 30) return
-        Log.d("dfsfw",buf.toString())
+        Log.d("dfsfw", buf.toString())
         val driCID = ByteArray(3)
         val arr = ByteArray(buf.remaining())
-        buf.get(driCID,0,3)
+        buf.get(driCID, 0, 3)
         val vendorType = ByteArray(1)
-        Log.d("ddddd",scanResult.SSID)
+        Log.d("ddddd", scanResult.SSID)
         buf.get(vendorType)
         if ((driCID[0].toInt() and 0xFF) == DRI_CID[0].toUByte().toInt() &&
             (driCID[1].toInt() and 0xFF) == DRI_CID[1].toUByte().toInt() &&
             (driCID[2].toInt() and 0xFF) == DRI_CID[2].toUByte().toInt() &&
-            vendorType[0] == VendorTypeValue.toByte()) {
+            vendorType[0] == VendorTypeValue.toByte()
+        ) {
 
             buf.position(DriStartByteOffset) // 设置位置以读取剩余数据
-            buf.get(arr, 0, buf.remaining())  // 读取剩余数据
-            Log.d("daadd2s",scanResult.BSSID)
-            connectionInfoList.add(1,ConnectionInfo(rssi = "test"))
-            connectionInfoList[0]= connectionInfoList[0].copy(rssi = scanResult.SSID)
+            buf.get(arr,0, buf.remaining())  // 读取剩余数据
+            val parser = WifiBeaconParser()
+
+            try {
+                parser.parse(arr)
+
+                // 获取并处理解析后的消息
+                parser.getMessages().forEach { message ->
+                    when (message) {
+                        is ParsedMessage.BasicMessage -> {
+                            println("Parsed Basic Message: ID Type: ${message.idType}, UAS ID: ${message.uasId}")
+                        }
+
+                        is ParsedMessage.PositionVectorMessage -> println("Parsed Position Vector Message with content: ")
+                        is ParsedMessage.ReservedMessage -> println("Parsed Reserved Message with content:")
+                        is ParsedMessage.RunningDescriptionMessage -> println("Parsed Running Description Message with content: ")
+                        is ParsedMessage.SystemMessage -> println("Parsed System Message with content: ")
+                        is ParsedMessage.RunningIdMessage -> println("Parsed Running ID Message with content: ")
+                    }
+                }
+            } catch (e: IllegalArgumentException) {
+                // 处理解析错误
+                e.printStackTrace()
+            }
+
+            Log.d("daadd2s", scanResult.BSSID)
+            connectionInfoList.add(1, ConnectionInfo(rssi = "test"))
+            connectionInfoList[0] = connectionInfoList[0].copy(rssi = scanResult.SSID)
 //        connectionInfoList.set(0,
 //            ConnectionInfo(scanResult.getWifiSsid().toString(), scanResult.BSSID, wifiDistance = scanResult.level ))
         }
 
     }
 }
+
 
 
 

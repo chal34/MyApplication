@@ -71,8 +71,8 @@ class WifiBeaconParser {
 
         val versionAndType = beaconData[0]
         val protocolVersion = versionAndType.toInt() and 0x0F // 取 3-0 位
-        val messageLength = beaconData[1].toInt() // 报文长度
-        val messageCount = beaconData[2].toInt() // 报文数量
+        val messageLength = beaconData[2].toInt() // 报文长度
+        val messageCount = beaconData[3].toInt() // 报文数量
 
         if (messageLength != MESSAGE_SIZE) {
             throw IllegalArgumentException("Invalid message length.")
