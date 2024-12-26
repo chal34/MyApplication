@@ -22,11 +22,11 @@ sealed class ParsedMessage {
         val Direction:Int,
         var speedHori: Int = 0,
         var speedVert: Int = 0,
-        var droneLat: Int = 0,
-        var droneLon: Int = 0,
+        var droneLat: Double = 0.0,
+        var droneLon: Double = 0.0,
         var altitudePressure: Int = 0,
         var altitudeGeodetic: Int = 0,
-        var height: Int = 0,
+        var height: Double = 0.0,
         var horizontalAccuracy: Int = 0,
         var verticalAccuracy: Int = 0,
         var baroAccuracy: Int = 0,
@@ -71,8 +71,8 @@ class WifiBeaconParser {
 
         val versionAndType = beaconData[0]
         val protocolVersion = versionAndType.toInt() and 0x0F // 取 3-0 位
-        val messageLength = beaconData[2].toInt() // 报文长度
-        val messageCount = beaconData[3].toInt() // 报文数量
+        val messageLength = beaconData[1].toInt() // 报文长度
+        val messageCount = beaconData[2].toInt() // 报文数量
 
         if (messageLength != MESSAGE_SIZE) {
             throw IllegalArgumentException("Invalid message length.")
@@ -123,8 +123,8 @@ class WifiBeaconParser {
         val speedHori = buffer1.get().toInt() and 0xFF
         val speedVert = buffer1.get().toInt()
 
-        val droneLat = buffer1.getInt()
-        val droneLon = buffer1.getInt()
+        val droneLat = buffer1.getDouble()
+        val droneLon = buffer1.getDouble()
 
         val altitudePressure = buffer1.getShort().toInt() and 0xFFFF
         val altitudeGeodetic = buffer1.getShort().toInt() and 0xFFFF

@@ -372,7 +372,12 @@ class MainActivity : ComponentActivity() {
             if (valueId == 221) {
 
                 val valueBytes = element.bytes
-                if (valueBytes == null) {
+                val testSSID = scanResult.SSID ?: continue
+                if (testSSID.isEmpty())
+                {
+                    continue
+                }
+                if (testSSID[0] !='U'){
                     continue
                 }
                 //Log.d("ddss1","tt1")
@@ -394,19 +399,24 @@ class MainActivity : ComponentActivity() {
         if (buf.remaining() < 30) return
         Log.d("dfsfw", buf.toString())
         val driCID = ByteArray(3)
-        val arr = ByteArray(buf.remaining())
+
+
         buf.get(driCID, 0, 3)
         val vendorType = ByteArray(1)
         Log.d("ddddd", scanResult.SSID)
+
         buf.get(vendorType)
         if ((driCID[0].toInt() and 0xFF) == DRI_CID[0].toUByte().toInt() &&
             (driCID[1].toInt() and 0xFF) == DRI_CID[1].toUByte().toInt() &&
             (driCID[2].toInt() and 0xFF) == DRI_CID[2].toUByte().toInt() &&
             vendorType[0] == VendorTypeValue.toByte()
         ) {
+            val ar1 = ByteArray(buf.remaining())
+          var arr = ByteArray(buf.remaining()-1)
 
             buf.position(DriStartByteOffset) // 设置位置以读取剩余数据
-            buf.get(arr,0, buf.remaining())  // 读取剩余数据
+            buf.get(ar1,0, buf.remaining())  // 读取剩余数据
+            arr = ar1.copyOfRange(1,ar1.size-1)
             val parser = WifiBeaconParser()
 
             try {
@@ -419,7 +429,7 @@ class MainActivity : ComponentActivity() {
                             println("Parsed Basic Message: ID Type: ${message.idType}, UAS ID: ${message.uasId}")
                         }
 
-                        is ParsedMessage.PositionVectorMessage -> println("Parsed Position Vector Message with content: ")
+                        is ParsedMessage.PositionVectorMessage -> locationInfoList[0] = locationInfoList[0].copy(latitude = message.droneLat, height = message.height)
                         is ParsedMessage.ReservedMessage -> println("Parsed Reserved Message with content:")
                         is ParsedMessage.RunningDescriptionMessage -> println("Parsed Running Description Message with content: ")
                         is ParsedMessage.SystemMessage -> println("Parsed System Message with content: ")
@@ -434,6 +444,7 @@ class MainActivity : ComponentActivity() {
             Log.d("daadd2s", scanResult.BSSID)
             connectionInfoList.add(1, ConnectionInfo(rssi = "test"))
             connectionInfoList[0] = connectionInfoList[0].copy(rssi = scanResult.SSID)
+
 //        connectionInfoList.set(0,
 //            ConnectionInfo(scanResult.getWifiSsid().toString(), scanResult.BSSID, wifiDistance = scanResult.level ))
         }
